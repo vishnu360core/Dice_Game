@@ -3,6 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
+public interface PlusMinusInt_Inteface
+{
+    public bool CheckBet(int bet);
+}
+
 public class PlusMinusInt : MonoBehaviour
 {
     [SerializeField] Text valueText;
@@ -10,6 +15,9 @@ public class PlusMinusInt : MonoBehaviour
     [SerializeField] public int value;
 
     public static PlusMinusInt Instance;
+
+    public PlusMinusInt_Inteface callback;
+
 
     void Awake()
     {
@@ -33,6 +41,9 @@ public class PlusMinusInt : MonoBehaviour
 
     public void IncreaseValue()
     {
+        if (!callback.CheckBet(value + 1))
+            return;
+        
         value++;
         UpdateValueText();
     }
@@ -47,6 +58,9 @@ public class PlusMinusInt : MonoBehaviour
 
     public void IncreaseAllValue()
     {
+        if (!callback.CheckBet(50))
+            return;
+
         value = 50;
         UpdateValueText();
     }

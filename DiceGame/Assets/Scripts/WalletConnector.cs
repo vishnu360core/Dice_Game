@@ -82,6 +82,8 @@ public class WalletConnector : MonoBehaviour
         Actions.Credit += CreditAction;
         Actions.Deduct += DeductAction;
 
+        connectWallet.onConnected.AddListener(GetWalletAddressAndBalance);
+
         var sdk = ThirdwebManager.Instance.SDK;
         contract = sdk.GetContract("0xd7059957411ad31a0453bba8de7371D0b9f096d5", abi);
     }
@@ -89,6 +91,8 @@ public class WalletConnector : MonoBehaviour
     public void GetWalletAddressAndBalance(string address)
     {
         _currentAddress = address;
+
+		RequestBalance();
     }
 
     public void RequestBalance()
@@ -98,26 +102,56 @@ public class WalletConnector : MonoBehaviour
 
     private async void CreditAction(string wei)
     {
-		try
+		TransactionResult result = null;
+
+
+        try
 		{
-			TransactionResult result  = await contract.Write("rewardFunc",_currentAddress,wei);
+			 result  = await contract.Write("rewardFunc",_currentAddress,wei);
+
+			Debug.LogWarning("Credit >>" + result.ToString());
+
+			Actions.EnableMessage(false);
+			Actions.CreditAction(true);
+
 			RequestBalance();	
 		}
-		catch 
+		catch(Exception ex) 
 		{
+            Debug.LogWarning("Credit >>" + ex.Message);
+
+            Actions.EnableMessage(false);
+			Actions.CreditAction(false);
+
             RequestBalance();
         } 
     }
 
     private async void DeductAction(string wei)
     {
+		Actions.EnableMessage(true);
+		PopMessage.Instance.SetMessage("Deduct in process");
+
+		TransactionResult result = null;
+
+
         try
         {
-			TransactionResult result = await contract.Write("placebid",new TransactionRequest() { value = wei,gasLimit = "300000" });
+		    result = await contract.Write("placebid",new TransactionRequest() { value = wei,gasLimit = "100000" });
+
+            Debug.LogWarning("Deduct >>" + result.ToString());
+
+            Actions.EnableMessage(false);
+            Actions.DeductAction(true);
             RequestBalance();
         }
-        catch
+        catch(Exception ex) 
         {
+
+            Debug.LogWarning("Deduct >>" + ex.Message);
+
+            Actions.EnableMessage(false);
+			Actions.DeductAction(false);
             RequestBalance();
         }
     }

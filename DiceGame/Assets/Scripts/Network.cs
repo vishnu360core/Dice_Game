@@ -33,7 +33,7 @@ public class Network : MonoBehaviour
     {
         switch (index) 
         {
-            case 0:  Debug.Log("Data connection Open"); break;
+            case 0:  Debug.Log("Data connection Open"); SetDice(); break;
             case 1: Debug.Log("Wallet connection Open");break;
             case 2: Debug.Log("Credit connection Open");break;
             case 3: Debug.Log("Deduct connection Open"); break;

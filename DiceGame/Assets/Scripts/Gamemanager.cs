@@ -4,17 +4,17 @@ using DG.Tweening;
 using System.Collections;
 using System;
 
-public class Gamemanager : MonoBehaviour
+public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
 {
     private int _amt;
     private float payout_amt;
     private float winchance_amt;
     private float winpay_amt;
 
+    [Header("UI Settings:")]
     [SerializeField] Text PayOut_Txt;
     [SerializeField] Text WinChance_Txt;
     [SerializeField] Text walletText;
-    [SerializeField] Animation_Number NumberCounter;
     [SerializeField] Slider otherslider;
 
     [SerializeField] Button Bet_Play;
@@ -23,28 +23,104 @@ public class Gamemanager : MonoBehaviour
     [SerializeField] AudioSource audioSource;
     public AudioSourceData audioSourceData;
 
+    [SerializeField] Animation_Number NumberCounter;
+
     [Header("Managers:")]
     [SerializeField] WalletConnector walletConnector;
+    [SerializeField] PlusMinusInt betContainer;
 
-    [Space]
-    public ResponseData response;
-    [SerializeField] string _currentHashCode;
-
+    float currentBalance;
+  
     private void Awake()
     {
         Actions.GetWalletBalance += SetWalletBalance;
+        Actions.GetDice += GetDiceAction;
+
+        Actions.DeductAction += DeductResult;
+        Actions.CreditAction += CreditResult;
+
+        betContainer.callback = this;
+    }
+
+    private void Start()
+    {
+        
+    }
+
+    #region TRANSACTIONS_OUTCOME
+
+    /// <summary>
+    /// Credit Result action
+    /// </summary>
+    /// <param name="enable"></param>
+    private void CreditResult(bool enable)
+    {
+      if(enable) 
+      {
+         PLayerBet_End();
+      }
+      else 
+      {
+         Actions.EnableMessage(true);
+         PopMessage.Instance.SetMessage("Credit Failed");
+
+         Invoke("PLayerBet_End", 3.0f);
+      }
+    }
+
+    /// <summary>
+    /// Deduct Result action
+    /// </summary>
+    /// <param name="enable"></param>
+    private void DeductResult(bool enable)
+    {
+       if(enable)
+        {
+            Debug.Log("Deduct successfull");
+
+            Invoke("DiceResultAction", 2.0f);
+        }
+       else
+        {
+            Bet_Play.interactable = true;
+        }
+    }
+    #endregion
+
+    /// <summary>
+    /// Check the current bet with the balance
+    /// </summary>
+    /// <param name="bet"></param>
+    /// <returns></returns>
+    public bool CheckBet(int bet)
+    {
+        if(bet > currentBalance)
+        {
+            PopMessage.Instance.SetMessage("InSufficient Balance", 3.0f);
+        }
+
+        return bet <= currentBalance;
+    }
+
+    private void GetDiceAction(int obj)
+    {
+        _amt = obj;
     }
 
     private void SetWalletBalance(float obj)
     {
        walletText.text = " $" + obj.ToString("F2");
+       currentBalance = obj;
     }
 
-    void OnSuccess(string data)
+    void DiceResultAction()
     {
-        ResponseData responseData = JsonUtility.FromJson<ResponseData>(data);
-        _currentHashCode = responseData.hash;
-        _amt = responseData.result;
+        //ResponseData responseData = JsonUtility.FromJson<ResponseData>(data);
+        //_currentHashCode = responseData.hash;
+        //_amt = responseData.result;
+
+        Debug.Log("Deduct successfull 1");
+
         NumberCounter.Value = _amt;
         StartCoroutine(PlaySoundAndStopAfterDuration());
 
@@ -54,7 +130,7 @@ public class Gamemanager : MonoBehaviour
             {
                 audioSourceData.ApplyTo(audioSource, "Win");
 
-                float f = (PlusMinusInt.Instance.value * winpay_amt) - PlusMinusInt.Instance.value;
+                float f = (PlusMinusInt.Instance.value * winpay_amt)/* - PlusMinusInt.Instance.value*/;
                 Debug.Log("Win Amount >>>>>>>>>>>" + f);
                // WalletConnector.Instance.CreditAmount(f)
 
@@ -62,7 +138,11 @@ public class Gamemanager : MonoBehaviour
                 DiceStat diceStat = instantiatedPrefab.GetComponent<DiceStat>();
                 diceStat.SetNumber(_amt);
 
-                Network.Instance.Credit(_amt);
+
+                Actions.EnableMessage(true);
+                PopMessage.Instance.SetMessage("You Won $" + f.ToString("F2") + "\n Credit in process");
+
+                Network.Instance.Credit(f);
             }
             else
             {
@@ -76,7 +156,11 @@ public class Gamemanager : MonoBehaviour
                 DiceStat diceStat = instantiatedPrefab.GetComponent<DiceStat>();
                 diceStat.SetNumber(_amt);
 
-                Network.Instance.Deduct(_amt);
+
+                Actions.EnableMessage(true);
+                PopMessage.Instance.SetMessage("You lost $" + f );
+
+                Invoke("PLayerBet_End", 3.0f);
             }
         });
 
@@ -88,8 +172,8 @@ public class Gamemanager : MonoBehaviour
             }
         }
 
+
         //WalletConnector.Instance.ConnectUpdateWallet();
-        Invoke("PLayerBet_End", 0.5f);
     }
 
     void OnError(string error)
@@ -109,6 +193,9 @@ public class Gamemanager : MonoBehaviour
     private void PLayerBet_End()
     {
         Bet_Play.interactable = true;
+        Network.Instance.SetDice();
+
+        Actions.EnableMessage(false);
     }
 
     public void PayOut_Func()
@@ -128,5 +215,11 @@ public class Gamemanager : MonoBehaviour
     {
         //API_Calling.Instance.SendGetRequest(OnSuccess, OnError);
         Bet_Play.interactable = false;
+
+        float f = PlusMinusInt.Instance.value;
+
+        Network.Instance.Deduct(f);
+
+        // DiceResultAction();
     }
 }

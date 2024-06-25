@@ -11,4 +11,9 @@ public static class Actions
     public static Action<float> GetWalletBalance;
 
     public static Action<int> GetDice;
+
+    public static Action<bool> EnableMessage;
+
+    public static Action<bool> DeductAction;
+    public static Action<bool> CreditAction;
 }

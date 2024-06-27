@@ -4,7 +4,7 @@ using DG.Tweening;
 using System.Collections;
 using System;
 
-public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
+public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface,NumberSliderInterface
 {
     private int _amt;
     private float payout_amt;
@@ -28,6 +28,7 @@ public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
     [Header("Managers:")]
     [SerializeField] WalletConnector walletConnector;
     [SerializeField] PlusMinusInt betContainer;
+    [SerializeField] NumberSlider numberSlider;
 
     float currentBalance;
   
@@ -40,6 +41,7 @@ public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
         Actions.CreditAction += CreditResult;
 
         betContainer.callback = this;
+        numberSlider.callback = this;
     }
 
     private void Start()
@@ -109,7 +111,7 @@ public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
 
     private void SetWalletBalance(float obj)
     {
-       walletText.text = " $" + obj.ToString("F2");
+       walletText.text = " $"+ obj.ToString("F2");
        currentBalance = obj;
     }
 
@@ -200,6 +202,8 @@ public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
 
     public void PayOut_Func()
     {
+        Debug.LogWarning("Changing PLAYOUT !!!!");
+
         payout_amt = 100 / NumberSlider.instance.slider.value;
         winpay_amt = payout_amt * 0.99f;
         PayOut_Txt.text = winpay_amt.ToString();
@@ -207,6 +211,8 @@ public class Gamemanager : MonoBehaviour,PlusMinusInt_Inteface
 
     public void WinChance_Func()
     {
+        Debug.LogWarning("Changing WIN !!!!");
+
         winchance_amt = Mathf.FloorToInt(NumberSlider.instance.slider.value);
         WinChance_Txt.text = winchance_amt.ToString("F" + (Mathf.Approximately(winchance_amt, Mathf.Floor(winchance_amt)) ? "0" : "2"));
     }

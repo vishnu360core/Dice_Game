@@ -1,7 +1,8 @@
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
+
+using TMPro;
 
 public interface PlusMinusInt_Inteface
 {
@@ -11,7 +12,8 @@ public interface PlusMinusInt_Inteface
 public class PlusMinusInt : MonoBehaviour
 {
     [SerializeField] Text valueText;
-    [SerializeField] InputField inputField;
+    //[SerializeField] InputField inputField;
+    [SerializeField] TMP_Text betText;
     [SerializeField] public int value;
 
     public static PlusMinusInt Instance;
@@ -29,14 +31,15 @@ public class PlusMinusInt : MonoBehaviour
 
     void Start()
     {
-        inputField.contentType = InputField.ContentType.IntegerNumber;
-        inputField.text = "1";
+        //inputField.contentType = InputField.ContentType.IntegerNumber;
+        betText.text = "1";
+        value = 1;
     }
 
     void UpdateValueText()
     {
         valueText.text = "Value: " + value.ToString();
-        inputField.text = value.ToString();
+        betText.text = value.ToString();
     }
 
     public void IncreaseValue()
@@ -75,7 +78,7 @@ public class PlusMinusInt : MonoBehaviour
 
     public void SetValue()
     {
-        if (int.TryParse(inputField.text, out int inputValue))
+        if (int.TryParse(betText.text, out int inputValue))
         {
             value = inputValue;
             UpdateValueText();
@@ -84,16 +87,6 @@ public class PlusMinusInt : MonoBehaviour
 
     public void InputValueChange()
     {
-        if (!string.IsNullOrEmpty(value.ToString()))
-        {
-            int intValue;
-            if (int.TryParse(value.ToString(), out intValue))
-            {
-                if (intValue > 50)
-                {
-                    inputField.text = "50";
-                }
-            }
-        }
+       betText.text += value.ToString();
     }
 }

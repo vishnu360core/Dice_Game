@@ -120,6 +120,15 @@ public class WalletConnector : MonoBehaviour
 		{
             Debug.LogWarning("Credit >>" + ex.Message);
 
+			if (ex.Message == "repriced")
+			{
+                Actions.EnableMessage(false);
+                Actions.CreditAction(true);
+                RequestBalance();
+
+				return;
+            }
+
             Actions.EnableMessage(false);
 			Actions.CreditAction(false);
 
@@ -149,6 +158,15 @@ public class WalletConnector : MonoBehaviour
         {
 
             Debug.LogWarning("Deduct >>" + ex.Message);
+
+			if(ex.Message == "repriced")
+			{
+                Actions.EnableMessage(false);
+                Actions.DeductAction(true);
+                RequestBalance();
+
+				return;
+            }
 
             Actions.EnableMessage(false);
 			Actions.DeductAction(false);

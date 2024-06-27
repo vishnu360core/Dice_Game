@@ -1,13 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+using TMPro;
+
+public interface NumberSliderInterface
+{
+    public void PayOut_Func();
+    public void WinChance_Func();
+}
+
 public class NumberSlider : MonoBehaviour
 {
+
+    [Header("UI Settings:")]
     [SerializeField] Text Point_Text;
-    [SerializeField] InputField inputField;
+    //[SerializeField] rollOverText rollOverText;
+    [SerializeField] TMP_Text rollOverText;
     [SerializeField] public Slider slider;
-    [SerializeField] Gamemanager _gamemanager;
+
+
+   //SerializeField] Gamemanager _gamemanager;
     public static NumberSlider instance;
+
+    public NumberSliderInterface callback;
 
     private void Awake()
     {
@@ -17,12 +32,12 @@ public class NumberSlider : MonoBehaviour
 
     private void Start()
     {
-        inputField.onValueChanged.AddListener(UpdateSliderValue);
-        slider.onValueChanged.AddListener(UpdateInputFieldValue);
+        //rollOverText.onValueChanged.AddListener(UpdateSliderValue);
+        slider.onValueChanged.AddListener(UpdaterollOverTextValue);
 
-        inputField.text = "50";
+        rollOverText.text = "50";
 
-        UpdateSliderValue(inputField.text);
+        UpdateSliderValue(rollOverText.text);
     }
 
     private void UpdateSliderValue(string value)
@@ -35,30 +50,33 @@ public class NumberSlider : MonoBehaviour
 
             Point_Text.text = value.ToString();
 
-            _gamemanager.PayOut_Func();
-            _gamemanager.WinChance_Func();
+            callback.PayOut_Func();
+            callback.WinChance_Func();
         }
     }
 
-    private void UpdateInputFieldValue(float value)
+    private void UpdaterollOverTextValue(float value)
     {
-        // Set the inputField value to the slider value
-        inputField.text = value.ToString();
+        // Set the rollOverText value to the slider value
+        rollOverText.text = value.ToString();
+        UpdateSliderValue();
+
+        UpdateSliderValue(rollOverText.text);
     }
 
     public void UpdateSliderValue()
     {
-        if (!string.IsNullOrEmpty(inputField.text))
+        if (!string.IsNullOrEmpty(rollOverText.text))
         {
-            if (!int.TryParse(inputField.text, out int intValue))
+            if (!int.TryParse(rollOverText.text, out int intValue))
             {
-                inputField.text = ((int)slider.value).ToString();
+                rollOverText.text = ((int)slider.value).ToString();
             }
             else
             {
                 intValue = Mathf.Clamp(intValue, 0, 98);
 
-                inputField.text = intValue.ToString();
+                rollOverText.text = intValue.ToString();
             }
         }
     }
